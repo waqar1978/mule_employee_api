@@ -1,1 +1,24 @@
-<mule></mule>
+<flow name="employee-api-main">
+
+    <http:listener config-ref="HTTP_Listener_config" path="/api/*"/>
+
+    <!-- Extract Token -->
+    <set-variable variableName="token"
+        value="#[attributes.headers.Authorization default '']"/>
+
+    <!-- Validate Token -->
+    <choice>
+        <when expression="#[vars.token startsWith 'Bearer ']">
+            
+            <!-- (Optional) Call OAuth introspection endpoint -->
+            <http:request method="POST" url="https://oauth-server/introspect"/>
+
+        </when>
+        <otherwise>
+            <raise-error type="UNAUTHORIZED" description="Missing or invalid token"/>
+        </otherwise>
+    </choice>
+
+    <apikit:router config-ref="employee-api-config"/>
+
+</flow>
