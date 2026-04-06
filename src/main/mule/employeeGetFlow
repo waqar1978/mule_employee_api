@@ -1,0 +1,35 @@
+<flow name="get:/employee">
+
+    <try>
+
+        <set-variable variableName="empId" value="#[attributes.queryParams.empId]"/>
+
+        <db:stored-procedure config-ref="DB_Config">
+            <db:sql>
+                <![CDATA[
+                { call get_employee(:emp_id) }
+                ]]>
+            </db:sql>
+            <db:input-parameters>
+                #[{ emp_id: vars.empId }]
+            </db:input-parameters>
+        </db:stored-procedure>
+
+        <ee:transform>
+            <ee:set-payload><![CDATA[
+%dw 2.0
+output application/json
+---
+payload
+            ]]></ee:set-payload>
+        </ee:transform>
+
+        <error-handler>
+            <on-error-propagate logException="true">
+                <set-payload value='{"status":"ERROR","message": "#[error.description]"}' mimeType="application/json"/>
+            </on-error-propagate>
+        </error-handler>
+
+    </try>
+
+</flow>
