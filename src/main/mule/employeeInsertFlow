@@ -1,0 +1,40 @@
+<flow name="post:/employee:application/json">
+
+    <try>
+
+        <ee:transform doc:name="Transform to SP Params">
+            <ee:message>
+                <ee:set-payload><![CDATA[
+%dw 2.0
+output application/java
+---
+{
+    emp_id: payload.empId,
+    first_name: payload.firstName,
+    last_name: payload.lastName,
+    email: payload.email,
+    salary: payload.salary
+}
+                ]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <db:stored-procedure config-ref="DB_Config">
+            <db:sql>
+                <![CDATA[
+                { call insert_employee(:emp_id, :first_name, :last_name, :email, :salary) }
+                ]]>
+            </db:sql>
+        </db:stored-procedure>
+
+        <set-payload value='{"status":"INSERT SUCCESS"}' mimeType="application/json"/>
+
+        <error-handler>
+            <on-error-propagate logException="true">
+                <set-payload value='{"status":"ERROR","message": "#[error.description]"}' mimeType="application/json"/>
+            </on-error-propagate>
+        </error-handler>
+
+    </try>
+
+</flow>
