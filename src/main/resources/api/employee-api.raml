@@ -3,6 +3,19 @@ title: Employee API
 version: v1
 baseUri: /api
 
+securitySchemes:
+  oauth_2_0:
+    type: OAuth 2.0
+    describedBy:
+      headers:
+        Authorization:
+          description: Bearer token
+          type: string
+    settings:
+      authorizationUri: https://auth-server/authorize
+      accessTokenUri: https://auth-server/token
+      authorizationGrants: [ client_credentials ]
+
 types:
   Employee:
     type: object
@@ -14,6 +27,8 @@ types:
       salary: number
 
 /employee:
+  securedBy: [ oauth_2_0 ]
+  
   post:
     description: Insert employee
     body:
